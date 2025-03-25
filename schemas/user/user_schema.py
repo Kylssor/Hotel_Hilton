@@ -16,10 +16,10 @@ class UserResponseSchema(BaseModel):
     class Config:
         json_schema_extra = {
             "example":{
+                "id": "123e4567-e89b-12d3-a456-426",
                 "name": "Gustavo",
                 "last_name": "Romero",
-                "email": "example@example.com",
-                "password": "217d2c34d529d04d84d09df19e7efd63fa2d619d21e4941536450f569cffd40b",
+                "email": "example@example.com"
             }
         }
         from_attributes = True 

@@ -1,15 +1,11 @@
-from typing import List, Optional
-from sqlmodel import Column, Enum, Field, Relationship, func, String, Text
-from models.entities.base import base_entity
-from models.entities.user.employeed import Employeed
+from typing import TYPE_CHECKING
+from sqlmodel import Column, Field, Relationship, String
+from models.entities.base.base_entity import BaseEntity
 
-class RoleName(str, Enum):
-    ADMIN = "admin"
-    EMPLOYEE = "employee"
-    CUSTOMER = "customer"
+if TYPE_CHECKING:
+    from models.entities.user.employeed import Employeed
 
-class Role(base_entity, table=True):
+class Role(BaseEntity, table=True):
     name: str = Field(sa_column=Column("name", String(100), unique=True))
-    description: Optional[str] = Field(sa_column=Column("description", Text))
     
-    employeeds: List["Employeed"] = Relationship(back_populates="roles")
+    employeeds: list["Employeed"] = Relationship(back_populates="roles")

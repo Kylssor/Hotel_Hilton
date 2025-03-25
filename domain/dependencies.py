@@ -2,9 +2,9 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlmodel import Session
-from core.security import verify_password, create_access_token
-from core.database import get_db
-from core.config import settings
+from domain.security import verify_password, create_access_token
+from domain.database import get_db
+from domain.config import settings
 from models.entities.user.customer import Customer
 from models.entities.user.employeed import Employeed
 

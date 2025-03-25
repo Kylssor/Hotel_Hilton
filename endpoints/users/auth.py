@@ -5,8 +5,8 @@ from schemas.authentication.sign_in_schema import SignInSchema
 from schemas.authentication.token_schema import TokenSchema
 from models.entities.user.employeed import Employeed
 from models.entities.user.customer import Customer
-from core.database import get_db
-from core.security import verify_password, create_access_token
+from domain.database import get_db
+from domain.security import verify_password, create_access_token
 
 router = APIRouter(tags=["Autenticación"])
 

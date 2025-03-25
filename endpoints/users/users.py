@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
-from core.dependencies import get_current_user
-from core.database import get_db
+from domain.dependencies import get_current_user
+from domain.database import get_db
 from schemas.user.user_schema import UserCreateSchema, UserResponseSchema
 from models.entities.user.person import Person
 from models.entities.user.customer import Customer
-from core.security import get_password_hash
+from domain.security import get_password_hash
 
 router = APIRouter(tags=["Usuarios"])
 

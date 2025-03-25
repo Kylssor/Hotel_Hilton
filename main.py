@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from core.database import engine
+from domain.database import engine
 from models.entities.base.Base_entity import BaseEntity
 from endpoints.users.auth import router as auth_router
 from endpoints.users.users import router as users_router
