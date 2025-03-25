@@ -1,10 +1,9 @@
 import uuid
-
 from exceptions.duplicated_error_exception import DuplicatedErrorException
 from exceptions.not_found_error_exception import NotFoundErrorException
 from entities.base.base_entity import BaseEntity
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import Session, joinedload
 from typing import Callable, TypeVar, Generic
 
 from context.persistence_context import PersistenceContext
@@ -13,8 +12,8 @@ Entity = TypeVar("Entity", bound=BaseEntity)
 
 class GenericRepository(Generic[Entity]):
     
-    def __init__(self, db_context: PersistenceContext, entity: type[Entity]) -> None:
-        self.db_context =  db_context
+    def __init__(self, session: Session, entity: type[Entity]) -> None:
+        self.session =  session
         self.entity = entity
 
 
@@ -22,43 +21,46 @@ class GenericRepository(Generic[Entity]):
         *criterion: Callable[[type[Entity]], bool],
         include_propiertys: str = str()
     ):
-        with self.db_context.session() as session:
-            query = session.query(self.entity)
-            if len(include_propiertys) != 0:
-                for propierty in include_propiertys.split(","):
-                    query = query.options(joinedload(getattr(self.entity, propierty)))
-            filtered_query = query.filter(*criterion)
-            query = filtered_query
-            query = query.all()
-            return query
+        query = self.session.query(self.entity)
+        if len(include_propiertys) != 0:
+            for propierty in include_propiertys.split(","):
+                query = query.options(joinedload(getattr(self.entity, propierty)))
+        filtered_query = query.filter(*criterion)
+        query = filtered_query
+        query = query.all()
+        return query
 
 
     def read_by_id(self,
         id: uuid.UUID,
         include_propiertys: str = str()
     ):
-        with self.db_context.session() as session:
-            query = session.query(self.entity)
-            if len(include_propiertys) != 0:
-                for propierty in include_propiertys.split(","):
-                    query = query.options(joinedload(getattr(self.entity, propierty)))
-            query = query.filter(self.entity.id == id).first()
-            if not query:
-                raise NotFoundErrorException(detail=f"not found id : {id}")
-            return query
+        query = self.session.query(self.entity)
+        if len(include_propiertys) != 0:
+            for propierty in include_propiertys.split(","):
+                query = query.options(joinedload(getattr(self.entity, propierty)))
+        query = query.filter(self.entity.id == id).first()
+        if not query:
+            raise NotFoundErrorException(detail=f"not found id : {id}")
+        return query
 
 
     def add(self, entity: type[Entity]):
-        with self.db_context.session() as session:
-            query = self.entity = entity
-            try:
-                session.add(query)
-                session.commit()
-                session.refresh(query)
-            except IntegrityError as e:
-                session.rollback()
-                raise DuplicatedErrorException(detail=str(e.orig))
-            return query
+        query = self.entity = entity
+        try:
+            self.session.add(query)
+        except IntegrityError as e:
+            raise DuplicatedErrorException(detail=str(e.orig))
+        return query
+
+
+    def add_all(self, entity: list[type[Entity]]):
+        query = self.entity = entity
+        try:
+            self.session.add_all(query)
+        except IntegrityError as e:
+            raise DuplicatedErrorException(detail=str(e.orig))
+        return query
 
 
     def update(
@@ -70,29 +72,23 @@ class GenericRepository(Generic[Entity]):
             if value is not None and attr != '_sa_instance_state' and attr != 'created_at'
         }
 
-        with self.db_context.session() as session:
-            session.query(self.entity).filter(self.entity.id == entity.id).update(non_null_data)
-            session.commit()
-            return self.read_by_id(entity.id)
+        self.session.query(self.entity).filter(self.entity.id == entity.id).update(non_null_data)
+        return self.read_by_id(entity.id)
 
 
     def delete_by_id(self, id: uuid.UUID):
-        with self.db_context.session() as session:
-            query = session.query(self.entity).filter(self.entity.id == id).first()
-            if not query:
-                raise NotFoundErrorException(detail=f"not found id : {id}")
-            session.delete(query)
-            session.commit()
+        query = self.session.query(self.entity).filter(self.entity.id == id).first()
+        if not query:
+            raise NotFoundErrorException(detail=f"not found id : {id}")
+        self.session.delete(query)
     
     def delete_by_options(self, 
         *criterion: Callable[[type[Entity]], bool]
     ):
-        with self.db_context.session() as session:
-            query = session.query(self.entity)
-            filtered_query = query.filter(*criterion)
-            query = filtered_query
-            query = query.all()
-            if query:
-                for item in query:
-                    session.delete(item)
-            session.commit()
+        query = self.session.query(self.entity)
+        filtered_query = query.filter(*criterion)
+        query = filtered_query
+        query = query.all()
+        if query:
+            for item in query:
+                self.session.delete(item)

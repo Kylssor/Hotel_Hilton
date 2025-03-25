@@ -8,4 +8,4 @@ if TYPE_CHECKING:
 class Role(BaseEntity, table=True):
     name: str = Field(sa_column=Column("name", String(100), unique=True))
     
-    employeeds: list["Employeed"] = Relationship(back_populates="roles")
+    employeeds: list["Employeed"] = Relationship(back_populates="role")
