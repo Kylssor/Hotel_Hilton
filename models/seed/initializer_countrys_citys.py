@@ -8,12 +8,12 @@ def create(uow: UnitOfWork):
     country_repo = GenericRepository(uow.session, Country)
     city_repo = GenericRepository(uow.session, City)
 
-    count: int = country_repo.read_by_options().count()
+    count: int = len(country_repo.read_by_options())
 
-    if count == 0:
+    if count != 0:
         return
     
-    countrys = list[
+    countrys = [
         Country(
             name="Colombia",
             iso_code="CO"
@@ -25,14 +25,14 @@ def create(uow: UnitOfWork):
     ]
     country_repo.add_all(countrys)
 
-    citys = list[
+    citys = [
         City(
             name="Bogota D.C.",
             country_id=countrys[0].id
         ),
         City(
             name="Miami",
-            country_id=countrys[0].id
+            country_id=countrys[1].id
         )
     ]
     city_repo.add_all(citys)

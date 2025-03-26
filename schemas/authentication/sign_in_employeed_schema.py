@@ -1,8 +1,8 @@
 from pydantic import BaseModel, Field
 
 
-class SignInSchema(BaseModel):
-    email: str = Field(..., max_length=100)
+class SignInEmployeedSchema(BaseModel):
+    user_name: str = Field(..., max_length=100)
     password: str = Field(...)
     
     class Config:

@@ -1,4 +1,3 @@
-from operator import and_
 import os
 
 from dotenv import load_dotenv
@@ -16,22 +15,20 @@ def create(uow: UnitOfWork):
     person_repo = GenericRepository(uow.session, Person)
     employeed_repo = GenericRepository(uow.session, Employeed)
     
-    count: int = employeed_repo.read_by_options().count()
+    count: int = len(employeed_repo.read_by_options())
     
-    if count == 0:
+    if count != 0:
         return
     
     city_repo = GenericRepository(uow.session, City)
     role_repo = GenericRepository(uow.session, Role)
     
     
-    city = city_repo.read_by_options(lambda: and_(
-        City.name == "Bogota D.C."
-    ))
+    city = city_repo\
+        .read_by_options(City.name == "Bogota D.C.")
     
-    role = role_repo.read_by_options(lambda: and_(
-        Role.name == "SuperAdmin"
-    ))
+    role = role_repo\
+        .read_by_options(Role.name == "SuperAdmin")
     
     person = Person (
         identification_number="1007727136",

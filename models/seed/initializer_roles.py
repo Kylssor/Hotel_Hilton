@@ -6,12 +6,12 @@ from models.repository.unit_of_work import UnitOfWork
 def create(uow: UnitOfWork):
     role_repo = GenericRepository(uow.session, Role)
     
-    count: int = role_repo.read_by_options().count()
+    count: int = len(role_repo.read_by_options())
     
-    if count == 0:
+    if count != 0:
         return
     
-    roles = list[
+    roles = [
         Role(
             name="SuperAdmin"
         ),

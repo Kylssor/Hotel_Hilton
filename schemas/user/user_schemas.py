@@ -9,6 +9,7 @@ class UserCreateSchema(BaseModel):
     email: str = Field(default=None, nullable=False, max_length= 100)
     phone: str = Field(sdefault=None, nullable=False, max_length= 15)
     address: str = Field(default=None, nullable=False, max_length= 200)
+    city_id: uuid.UUID = Field(default=None, nullable=False)
     password: str = Field(default=None, nullable=False)
     
     class Config:
@@ -20,6 +21,7 @@ class UserCreateSchema(BaseModel):
                 "email": "juan.perez@example.com",
                 "phone": "123456789",
                 "address": "Calle Falsa 123, Ciudad",
+                "city_id": "123e4567-e89b-12d3-a456",
                 "password": "217d2c34d529d04d84d09df19e7efd63fa2d619d21e4941536450f569cffd40b"
             }
         }

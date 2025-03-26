@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+from fastapi.security import OAuth2PasswordBearer
 from pydantic_settings import BaseSettings
 
 load_dotenv()
@@ -25,6 +26,18 @@ class ProjectConfig(BaseSettings):
     def API_PREFIX() -> str:
         return "/api"
 
+    @staticmethod
+    def SECRET_KEY() -> str:
+        return os.getenv("SECRET_KEY")
+
+
+    @staticmethod
+    def ALGORITHM() -> str:
+        return os.getenv("ALGORITHM")
+    
+    @staticmethod
+    def OAUTH2_SCHEME() -> OAuth2PasswordBearer:
+        return OAuth2PasswordBearer(tokenUrl="/api/auth/signin/employee")
 
     # CORS
     @staticmethod

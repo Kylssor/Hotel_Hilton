@@ -1,5 +1,5 @@
 from models.context.persistence_context import PersistenceContext
-from main import app_creator
+from domain.utils.app_context import app_context
 
 def get_db_context() -> PersistenceContext:
-    return app_creator.db_context
+    return app_context.db_context

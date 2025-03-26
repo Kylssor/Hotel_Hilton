@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from context.persistence_context import PersistenceContext
+from models.context.persistence_context import PersistenceContext
 
 class UnitOfWork:
     def __init__(self, db_context: PersistenceContext):

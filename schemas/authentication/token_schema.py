@@ -2,8 +2,8 @@ from pydantic import BaseModel, Field
 
 
 class TokenSchema(BaseModel):
-    access_token: str = Field(...)
-    token_type: str = Field(default="bearer")
+    access_token: str = Field(default=None, nullable=False)
+    token_type: str = Field(default="bearer", nullable=False)
     
     class Config:
         json_schema_extra = {

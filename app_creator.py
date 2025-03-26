@@ -1,11 +1,9 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 from config.project_config import ProjectConfig
-from domain.utils.app_context import app_context
 from domain.utils.seed import run_seed
 from middlewares.exception_handler_middleware import ExceptionHandlerMiddleware
 from domain.utils.singleton import singleton
-from endpoints.routes import routers
 from models.context.persistence_context import PersistenceContext
 
 app = FastAPI()
@@ -21,7 +19,6 @@ class AppCreator:
 
         self.db_context = PersistenceContext(ProjectConfig().DATABASE_URI)
         run_seed(self.db_context)
-        app_context.db_context = self.db_context
 
         # set cors
         if ProjectConfig.BACKEND_CORS_ORIGINS():
@@ -40,12 +37,3 @@ class AppCreator:
         @self.app.get("/")
         def root():
             return "service is working"
-
-        self.app.include_router(
-            routers,
-            prefix=ProjectConfig.API_PREFIX()
-        )
-
-
-app_creator = AppCreator()
-app = app_creator.app

@@ -1,12 +1,12 @@
 import uuid
 from exceptions.duplicated_error_exception import DuplicatedErrorException
 from exceptions.not_found_error_exception import NotFoundErrorException
-from entities.base.base_entity import BaseEntity
+from models.entities.base.base_entity import BaseEntity
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
 from typing import Callable, TypeVar, Generic
 
-from context.persistence_context import PersistenceContext
+from models.context.persistence_context import PersistenceContext
 
 Entity = TypeVar("Entity", bound=BaseEntity)
 
@@ -49,15 +49,17 @@ class GenericRepository(Generic[Entity]):
         query = self.entity = entity
         try:
             self.session.add(query)
+            self.session.flush()
         except IntegrityError as e:
             raise DuplicatedErrorException(detail=str(e.orig))
         return query
 
 
-    def add_all(self, entity: list[type[Entity]]):
+    def add_all(self, entity: list[Entity]):
         query = self.entity = entity
         try:
             self.session.add_all(query)
+            self.session.flush()
         except IntegrityError as e:
             raise DuplicatedErrorException(detail=str(e.orig))
         return query
@@ -73,6 +75,7 @@ class GenericRepository(Generic[Entity]):
         }
 
         self.session.query(self.entity).filter(self.entity.id == entity.id).update(non_null_data)
+        self.session.flush()
         return self.read_by_id(entity.id)
 
 
@@ -81,6 +84,7 @@ class GenericRepository(Generic[Entity]):
         if not query:
             raise NotFoundErrorException(detail=f"not found id : {id}")
         self.session.delete(query)
+        self.session.flush()
     
     def delete_by_options(self, 
         *criterion: Callable[[type[Entity]], bool]
@@ -92,3 +96,4 @@ class GenericRepository(Generic[Entity]):
         if query:
             for item in query:
                 self.session.delete(item)
+                self.session.flush()
