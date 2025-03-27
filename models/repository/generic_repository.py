@@ -11,11 +11,10 @@ from models.context.persistence_context import PersistenceContext
 Entity = TypeVar("Entity", bound=BaseEntity)
 
 class GenericRepository(Generic[Entity]):
-    
+
     def __init__(self, session: Session, entity: type[Entity]) -> None:
         self.session =  session
         self.entity = entity
-
 
     def read_by_options(self, 
         *criterion: Callable[[type[Entity]], bool],
@@ -25,11 +24,15 @@ class GenericRepository(Generic[Entity]):
         if len(include_propiertys) != 0:
             for propierty in include_propiertys.split(","):
                 query = query.options(joinedload(getattr(self.entity, propierty)))
-        filtered_query = query.filter(*criterion)
-        query = filtered_query
-        query = query.all()
-        return query
 
+        # Validar que los filtros no involucren tablas externas sin join
+        for c in criterion:
+            if hasattr(c, 'table') and c.table != self.entity.__table__:
+                raise ValueError("Criterios de filtrado involucran otras tablas sin un JOIN adecuado. Revisa tu uso del repositorio.")
+
+        filtered_query = query.filter(*criterion)
+        query = filtered_query.all()
+        return query
 
     def read_by_id(self,
         id: uuid.UUID,
@@ -44,7 +47,6 @@ class GenericRepository(Generic[Entity]):
             raise NotFoundErrorException(detail=f"not found id : {id}")
         return query
 
-
     def add(self, entity: type[Entity]):
         query = self.entity = entity
         try:
@@ -54,7 +56,6 @@ class GenericRepository(Generic[Entity]):
             raise DuplicatedErrorException(detail=str(e.orig))
         return query
 
-
     def add_all(self, entity: list[Entity]):
         query = self.entity = entity
         try:
@@ -63,7 +64,6 @@ class GenericRepository(Generic[Entity]):
         except IntegrityError as e:
             raise DuplicatedErrorException(detail=str(e.orig))
         return query
-
 
     def update(
         self,
@@ -78,21 +78,25 @@ class GenericRepository(Generic[Entity]):
         self.session.flush()
         return self.read_by_id(entity.id)
 
-
     def delete_by_id(self, id: uuid.UUID):
         query = self.session.query(self.entity).filter(self.entity.id == id).first()
         if not query:
             raise NotFoundErrorException(detail=f"not found id : {id}")
         self.session.delete(query)
         self.session.flush()
-    
+
     def delete_by_options(self, 
         *criterion: Callable[[type[Entity]], bool]
     ):
         query = self.session.query(self.entity)
+
+        # Validar que los filtros no involucren tablas externas sin join
+        for c in criterion:
+            if hasattr(c, 'table') and c.table != self.entity.__table__:
+                raise ValueError("Criterios de borrado involucran otras tablas sin un JOIN adecuado. Revisa tu uso del repositorio.")
+
         filtered_query = query.filter(*criterion)
-        query = filtered_query
-        query = query.all()
+        query = filtered_query.all()
         if query:
             for item in query:
                 self.session.delete(item)
