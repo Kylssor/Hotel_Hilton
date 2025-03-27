@@ -25,7 +25,7 @@ def create(uow: UnitOfWork):
     
     
     city = city_repo\
-        .read_by_options(City.name == "Bogota D.C.")
+        .read_by_options(City.name == "Bogotá")
     
     role = role_repo\
         .read_by_options(Role.name == "SuperAdmin")

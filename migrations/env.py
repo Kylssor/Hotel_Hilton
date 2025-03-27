@@ -70,10 +70,11 @@ def run_migrations_online() -> None:
 
     """
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
-        prefix="sqlalchemy.",
-        poolclass=pool.NullPool,
-    )
+    config.get_section(config.config_ini_section, {}),
+    prefix="sqlalchemy.",
+    poolclass=pool.NullPool,
+    connect_args={"client_encoding": "utf8"}
+)
 
     with connectable.connect() as connection:
         context.configure(

@@ -1,7 +1,6 @@
 from typing import Optional
 import uuid
-from sqlmodel import Column, Field, String
-from sqlmodel import Field, Relationship
+from sqlmodel import Column, Field, String, Relationship
 from models.entities.base.base_entity import BaseEntity
 from models.entities.user.person import Person
 from models.entities.user.role import Role
