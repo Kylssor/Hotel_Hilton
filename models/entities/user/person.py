@@ -20,5 +20,5 @@ class Person(BaseEntity, table=True):
     city_id: uuid.UUID = Field(foreign_key="city.id")
 
     city: Optional["City"] = Relationship(back_populates="persons")
-    customers: list["Customer"] = Relationship(back_populates="person")
-    employeeds: list["Employeed"] = Relationship(back_populates="person")
+    customers: list["Customer"] = Relationship(back_populates="persons")
+    employeeds: list["Employeed"] = Relationship(back_populates="persons")

@@ -37,7 +37,7 @@ def create(uow: UnitOfWork):
         person_id=person.id,
         role_id=role[0].id,
         user_name="gustavo.romero",
-        password_hash=get_password_hash(os.getenv("SUPER_ADMIN_PASS"))  # CORREGIDO
+        password_hash=get_password_hash(os.getenv("SUPER_ADMIN_PASS"))
     )
 
     person_repo.add(person)

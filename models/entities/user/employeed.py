@@ -12,5 +12,5 @@ class Employeed(BaseEntity, table=True):
     user_name: str = Field(sa_column=Column(String(50), unique=True))
     password_hash: str = Field(sa_column=Column(String(255)))
     
-    person: Optional["Person"] = Relationship(back_populates="employeeds")
-    role: Optional["Role"] = Relationship(back_populates="employeeds")
+    persons: Optional["Person"] = Relationship(back_populates="employeeds")
+    roles: Optional["Role"] = Relationship(back_populates="employeeds")

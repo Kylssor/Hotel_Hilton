@@ -5,6 +5,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from domain.utils.dependencies import get_db_context
 from domain.service.authentication_service import AuthenticationService
 from domain.utils.security import get_password_hash 
+from models.entities.user import role
 from models.entities.user.customer import Customer
 from models.entities.user.employeed import Employeed
 from models.entities.user.person import Person
@@ -62,13 +63,17 @@ async def signup_customer(user_data: UserCreateSchema, db=Depends(get_db_context
     uow = UnitOfWork(db)
     try:
         session = uow.session
+
+        # Verificar si ya existe una persona con ese correo
         query = select(Person).where(Person.email == user_data.email)
         existing_person = session.execute(query).scalar_one_or_none()
 
         if existing_person:
             raise ValueError("Ya existe una persona registrada con este correo.")
 
+        # Crear la persona
         new_person = Person(
+            identification_number=user_data.identification_number,
             first_name=user_data.first_name,
             last_name=user_data.last_name,
             email=user_data.email,
@@ -79,8 +84,15 @@ async def signup_customer(user_data: UserCreateSchema, db=Depends(get_db_context
         session.add(new_person)
         session.flush()
 
+        # Buscar el rol de "Cliente"
+        cliente_role = session.execute(select(role).where(role.name == "Cliente")).scalar_one_or_none()
+        if not cliente_role:
+            raise ValueError("Rol 'Cliente' no encontrado. Asegúrate de haberlo creado.")
+
+        # Crear el cliente con rol
         new_customer = Customer(
             person_id=new_person.id,
+            role_id=cliente_role.id,
             password_hash=get_password_hash(user_data.password)
         )
         session.add(new_customer)
@@ -123,7 +135,7 @@ async def signup_employee(user_data: UserCreateSchema, db=Depends(get_db_context
 
         new_employeed = Employeed(
             person_id=new_person.id,
-            role_id=None,
+            role_id=role[0].id,
             user_name=user_data.email,
             password_hash=get_password_hash(user_data.password)
         )
