@@ -1,7 +1,6 @@
-from fastapi import security
 from domain.utils import argument_validator
 from domain.utils.list_helper import first_or_none
-from domain.utils.security import create_access_jwt_token, hash_sha256, verify_password
+from domain.utils.security import create_access_jwt_token, verify_password  # ⬅️ quitado hash_sha256
 from exceptions.unauthorized_exception import UnauthorizedException
 from models.entities.user.employeed import Employeed
 from models.entities.user.customer import Customer
@@ -11,13 +10,14 @@ from models.repository.unit_of_work import UnitOfWork
 from schemas.authentication.sign_in_employeed_schema import SignInEmployeedSchema
 from schemas.authentication.sign_in_customer_schema import SignInCustomerSchema
 
+
 class AuthenticationService():
     def __init__(self, uow: UnitOfWork):
         self.employeed_repo = GenericRepository(uow.session, Employeed)
         self.customer_repo = GenericRepository(uow.session, Customer)
 
-    def sign_in_emploty(self, sing_in_data: SignInEmployeedSchema)-> str:
-        argument_validator.validate_empty(sing_in_data.user_name, "El nombre de usuario no puede estar vacio")
+    def sign_in_emploty(self, sing_in_data: SignInEmployeedSchema) -> str:
+        argument_validator.validate_empty(sing_in_data.user_name, "El nombre de usuario no puede estar vacío")
 
         employeed: Employeed = first_or_none(
             self.employeed_repo.read_by_options(
@@ -49,7 +49,7 @@ class AuthenticationService():
         )
 
         if not customer:
-            raise UnauthorizedException("No se encontró un cliente con ese correo electrónico proporcionado, verifique si esta correcto.")
+            raise UnauthorizedException("No se encontró un cliente con ese correo electrónico proporcionado, verifique si está correcto.")
 
         if not verify_password(sign_in_data.password, customer.password_hash):
             raise UnauthorizedException("La contraseña proporcionada es incorrecta. Por favor, inténtelo de nuevo.")
@@ -60,3 +60,4 @@ class AuthenticationService():
         }
 
         return create_access_jwt_token(data)
+

@@ -14,15 +14,12 @@ class ProjectConfig(BaseSettings):
     DB_PORT: str = os.getenv("DB_PORT")
     DB_ENGINE: str = os.getenv("DB_ENGINE")
     DB_NAME: str = os.getenv("DB_NAME")
-    
+
+    SECRET_KEY: str = os.getenv("SECRET_KEY")
+    ALGORITHM: str = os.getenv("ALGORITHM")  
+
     @property
     def DATABASE_URI(self) -> str:
-        print(self.DB_HOST)
-        print(self.DB_USER)
-        print(self.DB_PASSWORD)
-        print(self.DB_PORT)
-        print(self.DB_ENGINE)
-        print(self.DB_NAME)
         return self.DATABASE_URI_FORMAT.format(
             db_engine=self.DB_ENGINE,
             user=self.DB_USER,
@@ -41,17 +38,10 @@ class ProjectConfig(BaseSettings):
         return "/api"
 
     @staticmethod
-    def SECRET_KEY() -> str:
-        return os.getenv("SECRET_KEY")
-
-    @staticmethod
-    def ALGORITHM() -> str:
-        return os.getenv("ALGORITHM")
-
-    @staticmethod
     def OAUTH2_SCHEME() -> OAuth2PasswordBearer:
-        return OAuth2PasswordBearer(tokenUrl="/api/auth/signin/employee")
+        return OAuth2PasswordBearer(tokenUrl="/api/auth/signin")  # ✅ Unificado (cliente y empleado)
 
     @staticmethod
     def BACKEND_CORS_ORIGINS() -> list[str]:
-        return ["*"]
+        return ["*"]  # O mejor: cargar desde .env si quieres más seguridad
+
