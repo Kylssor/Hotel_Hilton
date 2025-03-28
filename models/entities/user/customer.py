@@ -9,8 +9,6 @@ from models.entities.user.role import Role
 
 class Customer(BaseEntity, table=True):
     person_id: uuid.UUID = Field(foreign_key="person.id")
-    role_id: uuid.UUID = Field(foreign_key="role.id")
     password_hash: str = Field(sa_column=Column(String(255)))
 
     persons: Optional["Person"] = Relationship(back_populates="customers")
-    roles: Optional["Role"] = Relationship(back_populates="customers")

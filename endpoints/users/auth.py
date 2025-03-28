@@ -1,14 +1,8 @@
-from sqlalchemy import select
-from typing import Annotated
 from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
+from typing import Annotated
 from domain.utils.dependencies import get_db_context
 from domain.service.authentication_service import AuthenticationService
-from domain.utils.security import get_password_hash 
-from models.entities.user import role
-from models.entities.user.customer import Customer
-from models.entities.user.employeed import Employeed
-from models.entities.user.person import Person
 from models.repository.unit_of_work import UnitOfWork
 from schemas.authentication.sign_in_employeed_schema import SignInEmployeedSchema
 from schemas.authentication.sign_in_customer_schema import SignInCustomerSchema
@@ -32,7 +26,8 @@ async def sign_in_employee(
             password=form_data.password
         )
         service = AuthenticationService(uow)
-        return TokenSchema(access_token=service.sign_in_emploty(sign_in_data))
+        token = service.sign_in_employee(sign_in_data)
+        return TokenSchema(access_token=token)
     except Exception as e:
         uow.rollback()
         raise e
@@ -51,7 +46,8 @@ async def sign_in_customer(
             password=form_data.password
         )
         service = AuthenticationService(uow)
-        return TokenSchema(access_token=service.sign_in_customer(sign_in_data))
+        token = service.sign_in_customer(sign_in_data)
+        return TokenSchema(access_token=token)
     except Exception as e:
         uow.rollback()
         raise e
@@ -62,42 +58,9 @@ async def sign_in_customer(
 async def signup_customer(user_data: UserCreateSchema, db=Depends(get_db_context)):
     uow = UnitOfWork(db)
     try:
-        session = uow.session
-
-        # Verificar si ya existe una persona con ese correo
-        query = select(Person).where(Person.email == user_data.email)
-        existing_person = session.execute(query).scalar_one_or_none()
-
-        if existing_person:
-            raise ValueError("Ya existe una persona registrada con este correo.")
-
-        # Crear la persona
-        new_person = Person(
-            identification_number=user_data.identification_number,
-            first_name=user_data.first_name,
-            last_name=user_data.last_name,
-            email=user_data.email,
-            phone=user_data.phone,
-            address=user_data.address,
-            city_id=user_data.city_id
-        )
-        session.add(new_person)
-        session.flush()
-
-        # Buscar el rol de "Cliente"
-        cliente_role = session.execute(select(role).where(role.name == "Cliente")).scalar_one_or_none()
-        if not cliente_role:
-            raise ValueError("Rol 'Cliente' no encontrado. Asegúrate de haberlo creado.")
-
-        # Crear el cliente con rol
-        new_customer = Customer(
-            person_id=new_person.id,
-            role_id=cliente_role.id,
-            password_hash=get_password_hash(user_data.password)
-        )
-        session.add(new_customer)
+        service = AuthenticationService(uow)
+        service.register_customer(user_data)
         uow.commit()
-
         return {"message": "Cliente registrado exitosamente"}
     except Exception as e:
         uow.rollback()
@@ -109,39 +72,9 @@ async def signup_customer(user_data: UserCreateSchema, db=Depends(get_db_context
 async def signup_employee(user_data: UserCreateSchema, db=Depends(get_db_context)):
     uow = UnitOfWork(db)
     try:
-        session = uow.session
-        query = (
-            select(Person)
-            .where(Person.first_name == user_data.first_name)
-            .where(Person.last_name == user_data.last_name)
-            .join(Employeed)
-        )
-        existing = session.execute(query).scalar_one_or_none()
-
-        if existing:
-            raise ValueError("Ya existe un empleado con el mismo nombre y apellido.")
-
-        new_person = Person(
-            identification_number=user_data.identification_number,
-            first_name=user_data.first_name,
-            last_name=user_data.last_name,
-            email=user_data.email,
-            phone=user_data.phone,
-            address=user_data.address,
-            city_id=user_data.city_id
-        )
-        session.add(new_person)
-        session.flush()
-
-        new_employeed = Employeed(
-            person_id=new_person.id,
-            role_id=role[0].id,
-            user_name=user_data.email,
-            password_hash=get_password_hash(user_data.password)
-        )
-        session.add(new_employeed)
+        service = AuthenticationService(uow)
+        service.register_employee(user_data)
         uow.commit()
-
         return {"message": "Empleado registrado exitosamente"}
     except Exception as e:
         uow.rollback()
