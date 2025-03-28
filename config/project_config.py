@@ -38,10 +38,15 @@ class ProjectConfig(BaseSettings):
         return "/api"
 
     @staticmethod
-    def OAUTH2_SCHEME() -> OAuth2PasswordBearer:
-        return OAuth2PasswordBearer(tokenUrl="/api/auth/signin")  # ✅ Unificado (cliente y empleado)
+    def OAUTH2_SCHEME_EMPLOYEED() -> OAuth2PasswordBearer:
+        return OAuth2PasswordBearer(tokenUrl="/api/auth/signin/employee")
+
+
+    @staticmethod
+    def OAUTH2_SCHEME_CUSTOMER() -> OAuth2PasswordBearer:
+        return OAuth2PasswordBearer(tokenUrl="/api/auth/signin/customer")
 
     @staticmethod
     def BACKEND_CORS_ORIGINS() -> list[str]:
-        return ["*"]  # O mejor: cargar desde .env si quieres más seguridad
+        return ["*"]
 

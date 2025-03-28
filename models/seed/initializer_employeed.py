@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-from domain.utils.security import get_password_hash
+from domain.utils.security import get_password_hash, hash_sha256
 from models.entities.location.city import City
 from models.entities.user.employeed import Employeed
 from models.entities.user.person import Person
@@ -37,7 +37,7 @@ def create(uow: UnitOfWork):
         person_id=person.id,
         role_id=role[0].id,
         user_name="gustavo.romero",
-        password_hash=get_password_hash(os.getenv("SUPER_ADMIN_PASS"))
+        password_hash=get_password_hash(hash_sha256(os.getenv("SUPER_ADMIN_PASS")))
     )
 
     person_repo.add(person)

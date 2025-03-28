@@ -16,10 +16,10 @@ def create(uow: UnitOfWork):
             name="SuperAdmin"
         ),
         Role(
-            name="Cliente"
+            name="Admin"
         ),
         Role(
-            name="Empleado_Basic"
+            name="Recepcionista"
         )
     ]
     
