@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
-from typing import List
+from typing import Annotated, List
 import uuid
 from datetime import date
 
@@ -19,7 +19,7 @@ router = APIRouter(prefix="/reservations", tags=["Reservations"])
 
 
 def get_current_user_from_token(
-    token: str = Depends(ProjectConfig.OAUTH2_SCHEME_EMPLOYEED),
+    token: Annotated[str, Depends(ProjectConfig.OAUTH2_SCHEME_CUSTOMER())],
     db_context: PersistenceContext = Depends(get_db_context)
 ):
     payload = validate_token_employee(token)

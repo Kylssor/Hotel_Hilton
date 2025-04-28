@@ -41,7 +41,6 @@ class ProjectConfig(BaseSettings):
     def OAUTH2_SCHEME_EMPLOYEED() -> OAuth2PasswordBearer:
         return OAuth2PasswordBearer(tokenUrl="/api/auth/signin/employee")
 
-
     @staticmethod
     def OAUTH2_SCHEME_CUSTOMER() -> OAuth2PasswordBearer:
         return OAuth2PasswordBearer(tokenUrl="/api/auth/signin/customer")

@@ -16,4 +16,4 @@ class Reservation(SQLModel, table=True):
     status_id: uuid.UUID = Field(foreign_key="reservationstatus.id")
     reservation_number: str = Field(sa_column=Column("reservation_number", String(20), unique=True))
 
-    rooms: Optional["Room"] = Relationship(back_populates="reservations")
+    room: Optional["Room"] = Relationship(back_populates="reservations")

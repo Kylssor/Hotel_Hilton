@@ -53,6 +53,7 @@ def create(uow: UnitOfWork):
     
     citys = [
         City(name="Bogotá", country_id=countrys[0].id),
+        City(name="Medellín", country_id=countrys[0].id),
         City(name="Cartagena", country_id=countrys[0].id),
         City(name="Santa Marta", country_id=countrys[0].id),
         City(name="Miami", country_id=countrys[1].id),
