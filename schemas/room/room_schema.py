@@ -42,7 +42,6 @@ class RoomRead(BaseModel):
     location_id: uuid.UUID
 
     class Config:
-        orm_mode = True
         json_schema_extra = {
             "example": {
                 "id": "555e4567-e89b-12d3-a456-426614174000",

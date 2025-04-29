@@ -20,29 +20,35 @@ def create(uow: UnitOfWork):
         raise Exception("Asegúrese de que existan RoomStatus 'Disponible' y tipos 'Estándar' y 'Suite'")
 
     # Obtener ciudades
-    medellin = city_repo.read_by_options(City.name == "Medellín")
-    bogota = city_repo.read_by_options(City.name == "Bogotá")
+    medellin_list = city_repo.read_by_options(City.name == "Medellín")
+    medellin = medellin_list[0] if medellin_list else None
+
+    bogota_list = city_repo.read_by_options(City.name == "Bogotá")
+    bogota = bogota_list[0] if bogota_list else None
+
     if not (medellin and bogota):
         raise Exception("Debe existir Medellín y Bogotá en ciudades")
 
     # Verificar ubicaciones (hoteles)
-    hilton = location_repo.read_first(Location.name == "Hilton Medellín")
+    hilton_list = location_repo.read_by_options(Location.name == "Hilton Medellín")
+    hilton = hilton_list[0] if hilton_list else None
     if not hilton:
         hilton = Location(
             name="Hilton Medellín",
             address="Carrera 43A #1-50, Medellín",
             phone="+57 4 4440000",
-            city_id=medellin[0].id
+            city_id=medellin.id
         )
         location_repo.add(hilton)
 
-    marriott = location_repo.read_first(Location.name == "Marriott Bogotá")
+    marriott_list = location_repo.read_by_options(Location.name == "Marriott Bogotá")
+    marriott = marriott_list[0] if marriott_list else None
     if not marriott:
         marriott = Location(
             name="Marriott Bogotá",
             address="Avenida El Dorado #69B-53, Bogotá",
             phone="+57 1 4851111",
-            city_id=bogota[0].id
+            city_id=bogota.id
         )
         location_repo.add(marriott)
 
@@ -58,10 +64,10 @@ def create(uow: UnitOfWork):
     ]
 
     for data in rooms_data:
-        existing_room = room_repo.read_first(
+        existing_room_list = room_repo.read_by_options(
             (Room.number == data["number"]) & (Room.location_id == data["location"].id)
         )
-        if not existing_room:
+        if not existing_room_list:
             new_room = Room(
                 number=data["number"],
                 type_id=data["type"].id,

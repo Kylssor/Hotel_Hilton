@@ -33,8 +33,8 @@ class ReservationService:
 
         return self.reservation_repo.read_by_options(
             *filters,
-            include_propiertys="room.room_type,room.location"
-        )
+            include_propiertys="room"
+)
 
     def get_all_reservations(self):
         return self.reservation_repo.read_by_options(

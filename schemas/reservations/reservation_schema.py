@@ -33,7 +33,6 @@ class ReservationRead(BaseModel):
     reservation_number: str
 
     class Config:
-        orm_mode = True
         json_schema_extra = {
             "example": {
                 "id": "cba98765-4321-fedc-9876-543210fedcba",

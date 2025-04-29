@@ -18,7 +18,6 @@ from schemas.reservations.reservation_schema import ReservationCreate, Reservati
 
 router = APIRouter(prefix="/reservations", tags=["Reservations"])
 
-
 def get_current_user_from_token(
     token: Annotated[str, Depends(ProjectConfig.OAUTH2_SCHEME_CUSTOMER())],
     db_context: PersistenceContext = Depends(get_db_context)
@@ -32,17 +31,18 @@ def get_current_user_from_token(
     user_id = payload.get("id")
 
     uow = UnitOfWork(db_context)
-    if user_type == "empleado":
-        employeed_repo = GenericRepository(uow.session, Employeed)
-        employeed = employeed_repo.read_by_id(uuid.UUID(user_id), include_propiertys="roles")
-        return {"id": employeed.id, "role": employeed.roles.name, "tipo_usuario": user_type}
-    elif user_type == "cliente":
-        customer_repo = GenericRepository(uow.session, Customer)
-        customer = customer_repo.read_by_id(uuid.UUID(user_id))
-        return {"id": customer.id, "role": "cliente", "tipo_usuario": user_type}
-
-    raise HTTPException(status_code=401, detail="Token inválido")
-
+    try:
+        if user_type == "empleado":
+            employeed_repo = GenericRepository(uow.session, Employeed)
+            employeed = employeed_repo.read_by_id(uuid.UUID(user_id), include_propiertys="roles")
+            return {"id": employeed.id, "role": employeed.roles.name, "tipo_usuario": user_type}
+        elif user_type == "cliente":
+            customer_repo = GenericRepository(uow.session, Customer)
+            customer = customer_repo.read_by_id(uuid.UUID(user_id))
+            return {"id": customer.id, "role": "cliente", "tipo_usuario": user_type}
+        raise HTTPException(status_code=401, detail="Token inválido")
+    finally:
+        uow.close()
 
 @router.post("/", response_model=ReservationRead)
 def create_reservation(
@@ -51,11 +51,27 @@ def create_reservation(
     current_user: dict = Depends(get_current_user_from_token)
 ):
     uow = UnitOfWork(db_context)
-    service = ReservationService(uow)
-    result = service.create_reservation(reservation_data)
-    uow.commit()
-    return result
+    try:
+        service = ReservationService(uow)
+        result = service.create_reservation(reservation_data)
+        uow.commit()
 
+        reservation_response = ReservationRead(
+            id=result.id,
+            room_id=result.room_id,
+            customer_id=result.customer_id,
+            check_in_date=result.check_in_date,
+            check_out_date=result.check_out_date,
+            status_id=result.status_id,
+            reservation_number=result.reservation_number,
+        )
+        return reservation_response
+
+    except Exception as e:
+        uow.rollback()
+        raise e
+    finally:
+        uow.close()
 
 @router.get("/customer/{customer_id}", response_model=List[ReservationRead])
 def get_customer_reservations(
@@ -69,9 +85,14 @@ def get_customer_reservations(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Acceso denegado")
 
     uow = UnitOfWork(db_context)
-    service = ReservationService(uow)
-    return service.get_customer_reservations(customer_id, upcoming=upcoming, history=history)
-
+    try:
+        service = ReservationService(uow)
+        return service.get_customer_reservations(customer_id, upcoming=upcoming, history=history)
+    except Exception as e:
+        uow.rollback()
+        raise e
+    finally:
+        uow.close()
 
 @router.get("/admin", response_model=List[ReservationRead])
 def get_all_reservations(
@@ -82,5 +103,11 @@ def get_all_reservations(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Acceso denegado")
 
     uow = UnitOfWork(db_context)
-    service = ReservationService(uow)
-    return service.get_all_reservations()
+    try:
+        service = ReservationService(uow)
+        return service.get_all_reservations()
+    except Exception as e:
+        uow.rollback()
+        raise e
+    finally:
+        uow.close()

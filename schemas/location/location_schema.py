@@ -27,7 +27,6 @@ class LocationRead(BaseModel):
     city_id: uuid.UUID
 
     class Config:
-        orm_mode = True
         json_schema_extra = {
             "example": {
                 "id": "789e4567-e89b-12d3-a456-426614174000",
@@ -44,7 +43,6 @@ class CountrySchema(BaseModel):
     name: str
 
     class Config:
-        orm_mode = True
         json_schema_extra = {
             "example": {
                 "id": "123e4567-e89b-12d3-a456-426614174000",
@@ -58,7 +56,6 @@ class CitySchema(BaseModel):
     country_id: UUID
 
     class Config:
-        orm_mode = True
         json_schema_extra = {
             "example": {
                 "id": "456e7890-e89b-12d3-a456-426614174000",
