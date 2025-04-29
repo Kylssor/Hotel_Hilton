@@ -4,11 +4,12 @@ import uuid
 from datetime import date
 
 from domain.service.reservation_service import ReservationService
+from exceptions.unauthorized_exception import UnauthorizedException
 from models.repository.unit_of_work import UnitOfWork
 from models.context.persistence_context import PersistenceContext
 from domain.utils.dependencies import get_db_context
 
-from domain.utils.security import validate_token_employee
+from domain.utils.security import validate_token_customer, validate_token_employee
 from config.project_config import ProjectConfig
 from models.repository.generic_repository import GenericRepository
 from models.entities.user.employeed import Employeed
@@ -22,7 +23,11 @@ def get_current_user_from_token(
     token: Annotated[str, Depends(ProjectConfig.OAUTH2_SCHEME_CUSTOMER())],
     db_context: PersistenceContext = Depends(get_db_context)
 ):
-    payload = validate_token_employee(token)
+    try:
+        payload = validate_token_employee(token)
+    except UnauthorizedException:
+        payload = validate_token_customer(token)
+
     user_type = payload.get("tipo_usuario")
     user_id = payload.get("id")
 
