@@ -48,22 +48,20 @@ class GenericRepository(Generic[Entity]):
         return query
 
     def add(self, entity: type[Entity]):
-        query = self.entity = entity
         try:
-            self.session.add(query)
+            self.session.add(entity)
             self.session.flush()
         except IntegrityError as e:
             raise DuplicatedErrorException(detail=str(e.orig))
-        return query
+        return entity
 
-    def add_all(self, entity: list[Entity]):
-        query = self.entity = entity
+    def add_all(self, entities: list[Entity]):
         try:
-            self.session.add_all(query)
+            self.session.add_all(entities)
             self.session.flush()
         except IntegrityError as e:
             raise DuplicatedErrorException(detail=str(e.orig))
-        return query
+        return entities
 
     def update(
         self,
