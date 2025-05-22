@@ -4,6 +4,8 @@ from endpoints.users.auth import auth_router
 from endpoints.users.users import router as user_router
 from endpoints.reservation.reservations import router as reservation_router
 from endpoints.location.locations import router as location_service_router
+from endpoints.reservation.reservation_management import router as reservation_management_router
+
 
 routers = APIRouter()
 
@@ -11,7 +13,8 @@ router_list = [
     auth_router,
     user_router,
     reservation_router,
-    location_service_router
+    location_service_router,
+    reservation_management_router
 ]
 
 for router in router_list:
