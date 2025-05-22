@@ -46,6 +46,16 @@ class GenericRepository(Generic[Entity]):
         if not query:
             raise NotFoundErrorException(detail=f"not found id : {id}")
         return query
+    
+    def read_by_filter_one(self, *criterion, include_propiertys: str = str()):
+        query = self.session.query(self.entity)
+        if include_propiertys:
+            for prop in include_propiertys.split(","):
+                query = query.options(joinedload(getattr(self.entity, prop)))
+        query = query.filter(*criterion).first()
+        if not query:
+            raise NotFoundErrorException("No se encontró el registro solicitado.")
+        return query
 
     def add(self, entity: type[Entity]):
         try:

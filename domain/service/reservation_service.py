@@ -2,6 +2,8 @@ from typing import List
 from uuid import UUID
 from datetime import date
 
+from fastapi import HTTPException, status
+
 from models.entities.reservation.reservation import Reservation
 from models.entities.reservation.reservationstatus import ReservationStatus
 from models.repository.unit_of_work import UnitOfWork
@@ -34,9 +36,33 @@ class ReservationService:
         return self.reservation_repo.read_by_options(
             *filters,
             include_propiertys="room"
-)
+        )
 
     def get_all_reservations(self):
         return self.reservation_repo.read_by_options(
             include_propiertys="room.location"
         )
+
+    def cancel_reservation(self, reservation_id: UUID) -> Reservation:
+        reservation = self.reservation_repo.read_by_filter_one(Reservation.id == reservation_id)
+        if not reservation:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Reserva no encontrada.")
+
+        status_cancelled = self.status_repo.read_by_filter_one(ReservationStatus.name == "Cancelada")
+        if not status_cancelled:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Estado 'Cancelada' no encontrado.")
+
+        reservation.status_id = status_cancelled.id
+        return self.reservation_repo.update(reservation)
+
+    def complete_reservation(self, reservation_id: UUID) -> Reservation:
+        reservation = self.reservation_repo.read_by_filter_one(Reservation.id == reservation_id)
+        if not reservation:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Reserva no encontrada.")
+
+        status_completed = self.status_repo.read_by_filter_one(ReservationStatus.name == "Completada")
+        if not status_completed:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Estado 'Completada' no encontrado.")
+
+        reservation.status_id = status_completed.id
+        return self.reservation_repo.update(reservation)

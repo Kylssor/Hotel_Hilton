@@ -7,7 +7,7 @@ from domain.service.reservation_service import ReservationService
 from exceptions.unauthorized_exception import UnauthorizedException
 from models.repository.unit_of_work import UnitOfWork
 from models.context.persistence_context import PersistenceContext
-from domain.utils.dependencies import get_db_context
+from domain.utils.dependencies import get_current_user_from_token, get_db_context
 
 from domain.utils.security import validate_token_customer, validate_token_employee
 from config.project_config import ProjectConfig
@@ -17,32 +17,6 @@ from models.entities.user.customer import Customer
 from schemas.reservations.reservation_schema import ReservationCreate, ReservationRead
 
 router = APIRouter(prefix="/reservations", tags=["Reservations"])
-
-def get_current_user_from_token(
-    token: Annotated[str, Depends(ProjectConfig.OAUTH2_SCHEME_CUSTOMER())],
-    db_context: PersistenceContext = Depends(get_db_context)
-):
-    try:
-        payload = validate_token_employee(token)
-    except UnauthorizedException:
-        payload = validate_token_customer(token)
-
-    user_type = payload.get("tipo_usuario")
-    user_id = payload.get("id")
-
-    uow = UnitOfWork(db_context)
-    try:
-        if user_type == "empleado":
-            employeed_repo = GenericRepository(uow.session, Employeed)
-            employeed = employeed_repo.read_by_id(uuid.UUID(user_id), include_propiertys="roles")
-            return {"id": employeed.id, "role": employeed.roles.name, "tipo_usuario": user_type}
-        elif user_type == "cliente":
-            customer_repo = GenericRepository(uow.session, Customer)
-            customer = customer_repo.read_by_id(uuid.UUID(user_id))
-            return {"id": customer.id, "role": "cliente", "tipo_usuario": user_type}
-        raise HTTPException(status_code=401, detail="Token inválido")
-    finally:
-        uow.close()
 
 @router.post("/", response_model=ReservationRead)
 def create_reservation(

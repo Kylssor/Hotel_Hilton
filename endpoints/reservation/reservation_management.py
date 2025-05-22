@@ -1,13 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from uuid import UUID
 
-from endpoints.reservation.reservations import get_current_user_from_token
-from domain.utils.dependencies import get_db_context
+from domain.utils.dependencies import get_current_user_from_token, get_db_context
 from domain.service.reservation_service import ReservationService
 from models.repository.unit_of_work import UnitOfWork
 from models.context.persistence_context import PersistenceContext
 
-router = APIRouter(prefix="/api/reservation-management", tags=["Reservation Management"])
+router = APIRouter(prefix="/reservation-management", tags=["Reservation Management"])
 
 @router.post("/{reservation_id}/complete")
 def complete_reservation(
